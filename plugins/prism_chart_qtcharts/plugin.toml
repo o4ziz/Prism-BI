@@ -1,0 +1,7 @@
+id = "prism.chart.qtcharts"
+name = "QtCharts Chart Engine"
+version = "1.0.0"
+api_version = 1
+entry_module = "prism_chart_qtcharts.plugin"
+entry_class = "QtChartsPlugin"
+description = "V1 chart types rendered with PySide6 QtCharts (replaceable engine)."

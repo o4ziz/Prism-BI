@@ -1,0 +1,7 @@
+id = "prism.datasource.csv"
+name = "CSV Data Source"
+version = "1.0.0"
+api_version = 1
+entry_module = "prism_datasource_csv.plugin"
+entry_class = "CsvDataSourcePlugin"
+description = "Import CSV files with delimiter/encoding detection."

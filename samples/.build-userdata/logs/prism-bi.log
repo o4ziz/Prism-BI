@@ -1,0 +1,13 @@
+2026-07-22T08:50:11 INFO [prism_bi] Null AI provider activated
+2026-07-22T08:50:11 INFO [prism_bi] Activated plugin prism.ai.null (0.1.0)
+2026-07-22T08:50:11 INFO [prism_bi] Activated plugin prism.chart.qtcharts (0.1.0)
+2026-07-22T08:50:11 INFO [prism_bi] Activated plugin prism.datasource.csv (0.1.0)
+2026-07-22T08:50:11 INFO [prism_bi] Activated plugin prism.datasource.excel (0.1.0)
+2026-07-22T08:50:11 INFO [prism_bi] Activated plugin prism.datasource.json (0.1.0)
+2026-07-22T08:50:11 INFO [prism_bi] Activated plugin prism.datasource.sqlite (0.1.0)
+2026-07-22T08:50:11 INFO [prism_bi] Stub datasource activated
+2026-07-22T08:50:11 INFO [prism_bi] Activated plugin prism.datasource.stub (0.1.0)
+2026-07-22T08:50:11 INFO [prism_bi] Activated plugin prism.exporter.image (0.1.0)
+2026-07-22T08:50:11 INFO [prism_bi] Activated plugin prism.exporter.pdf (0.1.0)
+2026-07-22T08:50:11 INFO [prism_bi] Activated plugin prism.exporter.tabular (0.1.0)
+2026-07-22T08:50:11 INFO [prism_bi] Container ready — plugins active=10 pending=0 failed=0 chart_types=['area', 'bar', 'histogram', 'line', 'pie', 'scatter', 'table'] formats=['csv', 'json', 'pdf', 'png', 'xlsx']

@@ -1,0 +1,7 @@
+id = "prism.datasource.json"
+name = "JSON Data Source"
+version = "1.0.0"
+api_version = 1
+entry_module = "prism_datasource_json.plugin"
+entry_class = "JsonDataSourcePlugin"
+description = "Import JSON array-of-objects files."

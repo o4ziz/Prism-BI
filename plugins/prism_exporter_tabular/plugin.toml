@@ -1,0 +1,7 @@
+id = "prism.exporter.tabular"
+name = "Tabular Exporters"
+version = "1.0.0"
+api_version = 1
+entry_module = "prism_exporter_tabular.plugin"
+entry_class = "TabularExporterPlugin"
+description = "CSV, Excel, and JSON exporters for tabular ExportArtifacts."

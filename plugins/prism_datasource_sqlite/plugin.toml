@@ -1,0 +1,7 @@
+id = "prism.datasource.sqlite"
+name = "SQLite Data Source"
+version = "1.0.0"
+api_version = 1
+entry_module = "prism_datasource_sqlite.plugin"
+entry_class = "SqliteDataSourcePlugin"
+description = "Import tables/views from SQLite databases."

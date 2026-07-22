@@ -1,0 +1,42 @@
+# Bytecode / caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Tooling
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+.import_linter_cache/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Local / secrets
+.env
+.env.*
+!.env.example
+*.pem
+
+# Packaging outputs
+dist/
+build/
+.rc-capture-userdata/
+.ga-capture-userdata/
+benchmarks/out/

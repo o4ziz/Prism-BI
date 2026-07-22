@@ -1,0 +1,7 @@
+id = "prism.exporter.image"
+name = "Image Exporters"
+version = "1.0.0"
+api_version = 1
+entry_module = "prism_exporter_image.plugin"
+entry_class = "ImageExporterPlugin"
+description = "PNG exporter for image ExportArtifacts."

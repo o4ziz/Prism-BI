@@ -1,0 +1,7 @@
+id = "prism.ai.null"
+name = "Null AI Provider"
+version = "1.0.0"
+api_version = 1
+entry_module = "prism_ai_null.plugin"
+entry_class = "NullAIPlugin"
+description = "No-op AI provider proving the AI extension slot."

@@ -1,0 +1,7 @@
+id = "prism.datasource.excel"
+name = "Excel Data Source"
+version = "1.0.0"
+api_version = 1
+entry_module = "prism_datasource_excel.plugin"
+entry_class = "ExcelDataSourcePlugin"
+description = "Import Excel worksheets (.xlsx) via calamine."

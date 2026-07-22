@@ -1,0 +1,7 @@
+id = "prism.datasource.stub"
+name = "Stub Data Source"
+version = "1.0.0"
+api_version = 1
+entry_module = "prism_datasource_stub.plugin"
+entry_class = "StubDataSourcePlugin"
+description = "Milestone 1 stub datasource proving batch_import capability registration."

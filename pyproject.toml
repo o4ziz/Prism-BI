@@ -1,0 +1,114 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "prism-bi"
+version = "1.0.0"
+description = "Prism BI — commercial desktop Business Intelligence platform"
+readme = "README.md"
+license = { text = "Proprietary" }
+requires-python = ">=3.11"
+authors = [{ name = "Prism BI" }]
+keywords = ["business-intelligence", "desktop", "analytics", "duckdb", "pySide6"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Win32 (MS Windows)",
+    "Intended Audience :: End Users/Desktop",
+    "License :: Other/Proprietary License",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Office/Business",
+]
+dependencies = [
+    "pyarrow>=18.0",
+    "PySide6>=6.6",
+    "keyring>=25.0",
+    "duckdb>=1.1",
+    "python-calamine>=0.3",
+    "openpyxl>=3.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.8",
+    "mypy>=1.13",
+    "pytest>=8.3",
+    "pytest-qt>=4.4",
+    "hypothesis>=6.100",
+    "import-linter>=2.1",
+    "pre-commit>=4.0",
+    "types-pygments>=2.0",
+]
+packaging = [
+    "pyinstaller>=6.0",
+]
+
+[project.scripts]
+prism-bi = "prism_bi.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["prism_bi*", "prism_bi_sdk*"]
+
+[tool.setuptools.package-data]
+prism_bi = ["infrastructure/config/*.toml", "presentation/resources/*"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["src", "tests", "plugins"]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+    "B",
+    "UP",
+    "SIM",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "prism_bi",
+    "prism_bi_sdk",
+    "prism_ai_null",
+    "prism_datasource_stub",
+    "prism_chart_qtcharts",
+    "prism_exporter_tabular",
+    "prism_exporter_image",
+    "prism_exporter_pdf",
+]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+show_error_codes = true
+mypy_path = "src"
+packages = ["prism_bi", "prism_bi_sdk"]
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = ["keyring.*", "PySide6.*", "pyarrow.*", "duckdb.*", "python_calamine.*", "openpyxl.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = ["-ra", "--strict-markers", "--strict-config"]
+qt_api = "pyside6"
+
+[tool.importlinter]
+root_packages = ["prism_bi", "prism_bi_sdk"]
+include_external_packages = true

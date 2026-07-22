@@ -1,0 +1,7 @@
+id = "prism.exporter.pdf"
+name = "PDF Exporter"
+version = "1.0.0"
+api_version = 1
+entry_module = "prism_exporter_pdf.plugin"
+entry_class = "PdfExporterPlugin"
+description = "PDF exporter for document/report ExportArtifacts via Qt print pipeline."
