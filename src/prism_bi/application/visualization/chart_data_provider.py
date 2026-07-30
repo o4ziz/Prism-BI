@@ -102,11 +102,15 @@ class AnalyticsChartDataProvider:
         relation: str,
         enc: ChartEncoding | None,
         where: str,
+        *,
+        bins: int = 20,
     ) -> ChartData:
         if enc is None:
             raise ValidationError("histogram requires an x field", code="chart_encoding")
+        if bins < 1:
+            raise ValidationError("histogram bins must be >= 1", code="chart_histogram")
         field = _q(enc.field)
-        # Approximate histogram via width_bucket (20 bins).
+        # DuckDB has no width_bucket; bin with FLOOR over [lo, hi].
         sql = f"""
             WITH bounds AS (
               SELECT
@@ -114,22 +118,42 @@ class AnalyticsChartDataProvider:
                 MAX(TRY_CAST({field} AS DOUBLE)) AS hi
               FROM {relation}
               {where}
+            ),
+            vals AS (
+              SELECT TRY_CAST({field} AS DOUBLE) AS v, bounds.lo, bounds.hi
+              FROM {relation}, bounds
+              WHERE TRY_CAST({field} AS DOUBLE) IS NOT NULL
+                AND bounds.lo IS NOT NULL
+                AND bounds.hi IS NOT NULL
+                {_and_extra(where)}
+            ),
+            binned AS (
+              SELECT
+                CASE
+                  WHEN lo = hi THEN 1
+                  ELSE LEAST(
+                    {bins},
+                    GREATEST(
+                      1,
+                      CAST(FLOOR((v - lo) / ((hi - lo) / {bins}.0)) AS INTEGER) + 1
+                    )
+                  )
+                END AS bin_id
+              FROM vals
             )
-            SELECT
-              CAST(width_bucket(TRY_CAST({field} AS DOUBLE), bounds.lo, bounds.hi, 20)
-                   AS VARCHAR) AS category,
-              COUNT(*) AS value
-            FROM {relation}, bounds
-            WHERE TRY_CAST({field} AS DOUBLE) IS NOT NULL
-              AND bounds.lo IS NOT NULL
-              AND bounds.hi IS NOT NULL
-              AND bounds.lo < bounds.hi
-              {_and_extra(where)}
+            SELECT CAST(bin_id AS VARCHAR) AS category, COUNT(*) AS value
+            FROM binned
             GROUP BY 1
             ORDER BY 1
             LIMIT {self._max_categories}
         """
         table = self._store.execute_arrow(sql)
+        if table.num_rows == 0:
+            raise ValidationError(
+                f"Histogram needs numeric values in '{enc.field}'. "
+                "For categories (e.g. City), use a bar chart instead.",
+                code="chart_histogram",
+            )
         truncated = table.num_rows >= self._max_categories
         return ChartData(
             batch=_table_to_batch(table),

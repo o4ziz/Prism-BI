@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
+from PySide6.QtCharts import QChartView
 from PySide6.QtWidgets import QLabel, QSizePolicy, QVBoxLayout, QWidget
 
 from prism_bi_sdk.dto.chart import ChartSpec
@@ -32,6 +33,7 @@ class ChartHostWidget(QWidget):
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._placeholder = QLabel("No chart loaded")
+        self._placeholder.setObjectName("EmptyStateLabel")
         self._layout.addWidget(self._placeholder)
 
     @property
@@ -63,7 +65,9 @@ class ChartHostWidget(QWidget):
         self._placeholder.hide()
         self._view = view
         self._spec = spec
-        self._layout.addWidget(view)
+        self._layout.addWidget(view, stretch=1)
+        if isinstance(view, QChartView):
+            view.setRubberBand(QChartView.RubberBand.RectangleRubberBand)
         if data.truncated:
             tip = "Chart data was truncated to the configured point/category limit."
             self.setToolTip(tip)
@@ -74,7 +78,22 @@ class ChartHostWidget(QWidget):
             self.setToolTip("")
             self.setAccessibleDescription(spec.title or "Chart")
 
+    def zoom(self, factor: float) -> None:
+        chart = self._chart()
+        if chart is not None:
+            chart.zoom(factor)
+
+    def fit_to_view(self) -> None:
+        chart = self._chart()
+        if chart is not None:
+            chart.zoomReset()
+
     def export_png(self, destination: str) -> None:
         if self._spec is None or self._view is None:
             raise RuntimeError("No chart view to export")
         self._chart_renderers.export_image(self._spec, self._view, destination)
+
+    def _chart(self) -> Any:
+        if isinstance(self._view, QChartView):
+            return self._view.chart()
+        return None

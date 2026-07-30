@@ -2,7 +2,7 @@
   "charts": [
     {
       "chart_type": "bar",
-      "dataset_id": "31c10067-551e-40ab-86c9-f4d1ae0caa15",
+      "dataset_id": "1716a3c7-60fe-4047-9245-b186646391f3",
       "encodings": [
         {
           "aggregation": null,
@@ -15,7 +15,7 @@
           "role": "y"
         }
       ],
-      "id": "7e531377-2b62-4263-a795-28f2e0e16f3c",
+      "id": "7780ada2-2272-4cad-86f6-8b3c69a5ea1b",
       "options": {},
       "title": "Revenue by region"
     }
@@ -24,8 +24,8 @@
   "datasets": [
     {
       "alias": "sales_demo",
-      "current_revision_id": "684a1c7d-2cd7-4a09-93c0-bbfb7f79e66d",
-      "id": "31c10067-551e-40ab-86c9-f4d1ae0caa15",
+      "current_revision_id": "3242bfe1-8ae2-412b-9882-630aa8e02158",
+      "id": "1716a3c7-60fe-4047-9245-b186646391f3",
       "revisions": [
         {
           "columns": [
@@ -60,8 +60,8 @@
               "override": false
             }
           ],
-          "created_at": "2026-07-22T05:50:11.225126+00:00",
-          "id": "684a1c7d-2cd7-4a09-93c0-bbfb7f79e66d",
+          "created_at": "2026-07-22T07:38:22.118682+00:00",
+          "id": "3242bfe1-8ae2-412b-9882-630aa8e02158",
           "label": "import",
           "parent_id": null
         }
@@ -71,11 +71,11 @@
     }
   ],
   "format_version": 1,
-  "id": "b9f1b007-20ea-4fbd-bf9c-295ce558242d",
+  "id": "bcb7d253-fcbb-4a43-a8c2-7ca4a964714c",
   "name": "Sales Demo",
   "pipelines": {},
   "profiles": {
-    "684a1c7d-2cd7-4a09-93c0-bbfb7f79e66d": {
+    "3242bfe1-8ae2-412b-9882-630aa8e02158": {
       "columns": [
         {
           "distinct_count": 4,
@@ -170,7 +170,7 @@
       ],
       "duplicate_row_count": 0,
       "relationship_hints": [],
-      "revision_id": "684a1c7d-2cd7-4a09-93c0-bbfb7f79e66d",
+      "revision_id": "3242bfe1-8ae2-412b-9882-630aa8e02158",
       "row_count": 10,
       "sampled": false
     }

@@ -239,6 +239,43 @@ QLabel#EmptyStateLabel {
     font-size: 13px;
 }
 
+QToolBar#VisualizeToolBar {
+    background: #111827;
+    border: 1px solid #1F2937;
+    border-radius: 8px;
+    margin: 0 0 8px 0;
+    padding: 4px 8px;
+    spacing: 4px;
+    color: #E5E7EB;
+}
+
+QFrame#ChartPreviewPanel {
+    background: #111827;
+    border: 1px solid #1F2937;
+    border-radius: 12px;
+}
+
+QToolButton#SectionToggle {
+    background: transparent;
+    border: none;
+    color: #F9FAFB;
+    font-weight: 650;
+    padding: 8px 4px;
+    text-align: left;
+}
+
+QFrame#CollapsibleSection {
+    background: #0F172A;
+    border: 1px solid #1F2937;
+    border-radius: 8px;
+}
+
+QChartView#PrismChartView {
+    background: #111827;
+    border: 1px solid #1F2937;
+    border-radius: 8px;
+}
+
 QFrame#ActionCard, QFrame#ContentPanel {
     background: #111827;
     border: 1px solid #1F2937;

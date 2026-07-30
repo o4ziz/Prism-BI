@@ -14,6 +14,7 @@ from prism_bi.application.use_cases.project_lifecycle import create_project
 from prism_bi.application.visualization.chart_data_provider import AnalyticsChartDataProvider
 from prism_bi.application.workspace import WorkspaceSession
 from prism_bi.domain.entities.dataset import Dataset, DatasetRevision
+from prism_bi.domain.errors import ValidationError
 from prism_bi.domain.visualization import (
     chart_from_dict,
     chart_to_dict,
@@ -168,6 +169,34 @@ def test_chart_data_provider_aggregates_and_caps(tmp_path: Path) -> None:
         fdata = provider.query(filtered)
         assert fdata.batch.num_rows == 1
         assert fdata.batch.column("value")[0].as_py() == pytest.approx(30.0)
+
+        hist_provider = AnalyticsChartDataProvider(
+            store,
+            project_provider=lambda: project,
+            max_categories=50,
+        )
+        hist = ChartSpec(
+            id=uuid4(),
+            chart_type="histogram",
+            dataset_id=dataset.id,
+            title="Amounts",
+            encodings=(ChartEncoding(role="x", field="amount"),),
+        )
+        hdata = hist_provider.query(hist)
+        assert hdata.category_column == "category"
+        assert hdata.batch.num_rows >= 1
+        assert sum(hdata.batch.column("value").to_pylist()) == 5
+
+        with pytest.raises(ValidationError, match="numeric"):
+            hist_provider.query(
+                ChartSpec(
+                    id=uuid4(),
+                    chart_type="histogram",
+                    dataset_id=dataset.id,
+                    title="Bad",
+                    encodings=(ChartEncoding(role="x", field="region"),),
+                )
+            )
     finally:
         store.close()
 
