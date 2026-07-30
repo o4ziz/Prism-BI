@@ -8,13 +8,48 @@ from __future__ import annotations
 
 import os
 import sys
+import time
 from pathlib import Path
 
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QDockWidget
 
 from prism_bi.application.use_cases.project_lifecycle import open_project
 from prism_bi.bootstrap.container import build_container
-from prism_bi.presentation.shell.main_window import MainWindow, _apply_stylesheet
+from prism_bi.presentation.shell.main_window import MainWindow
+from prism_bi.presentation.theme import ThemeMode, apply_theme
+
+
+def _pump(app: QApplication, ms: int = 200) -> None:
+    deadline = time.monotonic() + (ms / 1000.0)
+    while time.monotonic() < deadline:
+        app.processEvents()
+        time.sleep(0.02)
+
+
+def _hide_utility_docks(window: MainWindow) -> None:
+    for name in ("TaskCenterDock", "LogsDock"):
+        dock = window.findChild(QDockWidget, name)
+        if dock is not None:
+            dock.hide()
+
+
+def _prepare_visualize(window: MainWindow, app: QApplication) -> None:
+    view = getattr(window, "_visualize_view", None)
+    if view is None:
+        return
+    view.refresh()
+    _pump(app, 150)
+    if view._chart_list.count() > 0:  # noqa: SLF001
+        view._chart_list.setCurrentRow(0)  # noqa: SLF001
+        _pump(app, 400)
+
+
+def _prepare_data(window: MainWindow, app: QApplication) -> None:
+    view = getattr(window, "_data_view", None)
+    if view is None:
+        return
+    view.refresh()
+    _pump(app, 200)
 
 
 def main() -> int:
@@ -27,6 +62,9 @@ def main() -> int:
         os.environ["QT_QPA_PLATFORM"] = "windows"
 
     app = QApplication.instance() or QApplication(sys.argv)
+    # Docs shots use the light product theme for readability on GitHub.
+    apply_theme(app, ThemeMode.LIGHT)
+
     container = build_container(
         repo_root=root,
         user_data_dir=root / ".ga-capture-userdata",
@@ -34,7 +72,6 @@ def main() -> int:
         console_logging=False,
     )
     container.plugins.activate_pending()
-    _apply_stylesheet(app)
 
     sample = root / "samples" / "SalesDemo.prism"
     if sample.is_dir():
@@ -43,14 +80,29 @@ def main() -> int:
             print(f"WARN: could not open sample: {opened.message}")
 
     window = MainWindow(container)
-    window.resize(1280, 800)
+    window.resize(1440, 900)
     window.show()
-    app.processEvents()
+    _hide_utility_docks(window)
+    _pump(app, 300)
 
     modules = ("Home", "Data", "Prepare", "Visualize", "Dashboard", "Reports")
     for name in modules:
         window._select_module(name)  # noqa: SLF001
-        app.processEvents()
+        _hide_utility_docks(window)
+        _pump(app, 200)
+        if name == "Visualize":
+            _prepare_visualize(window, app)
+        elif name == "Data":
+            _prepare_data(window, app)
+        else:
+            view = getattr(window, f"_{name.lower()}_view", None)
+            refresh = getattr(view, "refresh", None)
+            if callable(refresh):
+                refresh()
+                _pump(app, 150)
+
+        # Let QtCharts finish layout/paint before grabbing.
+        _pump(app, 300)
         path = out / f"{name.lower()}.png"
         ok = window.grab().save(str(path), "PNG")
         size = path.stat().st_size if path.is_file() else 0
@@ -59,6 +111,7 @@ def main() -> int:
     container.plugins.deactivate_all()
     container.workspace.close()
     container.jobs.shutdown(wait=False)
+    window.close()
     return 0
 
 
