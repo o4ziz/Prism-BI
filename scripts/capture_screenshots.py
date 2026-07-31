@@ -62,8 +62,8 @@ def main() -> int:
         os.environ["QT_QPA_PLATFORM"] = "windows"
 
     app = QApplication.instance() or QApplication(sys.argv)
-    # Docs shots use the light product theme for readability on GitHub.
-    apply_theme(app, ThemeMode.LIGHT)
+    # Docs shots use the dark orange product theme.
+    apply_theme(app, ThemeMode.DARK)
 
     container = build_container(
         repo_root=root,

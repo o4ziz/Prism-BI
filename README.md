@@ -105,8 +105,10 @@ See [packaging/windows/README.md](packaging/windows/README.md) for building a
 portable folder with PyInstaller and an optional Inno Setup installer.
 
 ```powershell
-# Portable build
+# Portable build (+ zip)
 .\scripts\build_windows.ps1
+# Run:  .\dist\PrismBI\PrismBI.exe
+# Share: dist\PrismBI-portable-1.0.0.zip  (whole folder — not the .exe alone)
 ```
 
 ---

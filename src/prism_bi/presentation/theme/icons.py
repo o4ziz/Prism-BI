@@ -112,7 +112,7 @@ MODULE_ICONS = {
 
 def module_icon(name: str, *, active: bool = False) -> QIcon:
     factory = MODULE_ICONS.get(name, icon_home)
-    color = "#14B8A6" if active else _COLOR
+    color = "#F5601A" if active else _COLOR
     return factory(color=color)
 
 

@@ -9,6 +9,16 @@ from PySide6.QtCore import QSettings
 from PySide6.QtGui import QColor, QPalette
 from PySide6.QtWidgets import QApplication, QWidget
 
+from . import prism_theme
+
+__all__ = [
+    "ThemeMode",
+    "apply_theme",
+    "load_theme_preference",
+    "prism_theme",
+    "save_theme_preference",
+]
+
 
 class ThemeMode(StrEnum):
     LIGHT = "light"
@@ -18,11 +28,18 @@ class ThemeMode(StrEnum):
 _SETTINGS_ORG = "Prism BI"
 _SETTINGS_APP = "PrismBI"
 _KEY = "ui/theme"
+_PACK_KEY = "ui/theme_pack"
+_CURRENT_PACK = "orange-v1"
 
 
 def load_theme_preference() -> ThemeMode:
     settings = QSettings(_SETTINGS_ORG, _SETTINGS_APP)
-    raw = str(settings.value(_KEY, ThemeMode.LIGHT.value))
+    # One-time migrate older teal installs onto the new dark/orange pack.
+    if str(settings.value(_PACK_KEY, "")) != _CURRENT_PACK:
+        settings.setValue(_PACK_KEY, _CURRENT_PACK)
+        settings.setValue(_KEY, ThemeMode.DARK.value)
+        return ThemeMode.DARK
+    raw = str(settings.value(_KEY, ThemeMode.DARK.value))
     return ThemeMode.DARK if raw == ThemeMode.DARK.value else ThemeMode.LIGHT
 
 
@@ -35,20 +52,20 @@ def _build_palette(mode: ThemeMode) -> QPalette:
     """Keep native combo/popup text readable when QSS alone is not enough."""
     palette = QPalette()
     if mode is ThemeMode.DARK:
-        window = QColor("#0B1220")
-        base = QColor("#111827")
-        text = QColor("#E5E7EB")
-        disabled = QColor("#6B7280")
-        highlight = QColor("#134E4A")
-        highlighted = QColor("#F0FDFA")
-        button = QColor("#1F2937")
+        window = QColor("#0A0A0B")
+        base = QColor("#16171A")
+        text = QColor("#F5F5F5")
+        disabled = QColor("#8A8F98")
+        highlight = QColor("#F5601A")
+        highlighted = QColor("#0A0A0B")
+        button = QColor("#1C1D21")
     else:
         window = QColor("#F1F5F9")
         base = QColor("#FFFFFF")
         text = QColor("#0F172A")
         disabled = QColor("#94A3B8")
-        highlight = QColor("#CCFBF1")
-        highlighted = QColor("#0F766E")
+        highlight = QColor("#FFEDD5")
+        highlighted = QColor("#9A3412")
         button = QColor("#FFFFFF")
 
     palette.setColor(QPalette.ColorRole.Window, window)

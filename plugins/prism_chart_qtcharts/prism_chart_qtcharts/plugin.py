@@ -17,7 +17,7 @@ from PySide6.QtCharts import (
     QValueAxis,
 )
 from PySide6.QtCore import QMargins, Qt
-from PySide6.QtGui import QBrush, QColor, QFont, QPainter, QPen
+from PySide6.QtGui import QBrush
 from PySide6.QtWidgets import QLabel, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
 
 from prism_bi_sdk import (
@@ -29,43 +29,27 @@ from prism_bi_sdk import (
 from prism_bi_sdk.context import PluginContext
 from prism_bi_sdk.dto.chart import ChartSpec
 from prism_bi_sdk.dto.chart_data import ChartData
+from prism_chart_qtcharts.prism_theme import (
+    ACCENT,
+    BG,
+    BORDER,
+    SERIES_COLORS,
+    TEXT,
+    TEXT_MUTED,
+    series_colors,
+    style_area_series,
+    style_bar_series,
+    style_bar_set,
+    style_category_axis,
+    style_chart,
+    style_chart_view,
+    style_line_series,
+    style_scatter_series,
+    style_value_axis,
+    ui_font,
+)
 
 _SUPPORTED = ("bar", "line", "area", "pie", "scatter", "histogram", "table")
-
-_THEMES: dict[str, list[QColor]] = {
-    "teal": [
-        QColor("#0D9488"),
-        QColor("#14B8A6"),
-        QColor("#2DD4BF"),
-        QColor("#5EEAD4"),
-        QColor("#0991B3"),
-        QColor("#0284C7"),
-    ],
-    "ocean": [
-        QColor("#0369A1"),
-        QColor("#0284C7"),
-        QColor("#0EA5E9"),
-        QColor("#38BDF8"),
-        QColor("#06B6D4"),
-        QColor("#22D3EE"),
-    ],
-    "sunset": [
-        QColor("#EA580C"),
-        QColor("#F97316"),
-        QColor("#FB923C"),
-        QColor("#E11D48"),
-        QColor("#F43F5E"),
-        QColor("#A855F7"),
-    ],
-    "mono": [
-        QColor("#0F172A"),
-        QColor("#334155"),
-        QColor("#475569"),
-        QColor("#64748B"),
-        QColor("#94A3B8"),
-        QColor("#CBD5E1"),
-    ],
-}
 
 
 class QtChartsPlugin:
@@ -114,9 +98,7 @@ class QtChartsPlugin:
             return _build_table(spec, data, parent)
         chart = _build_chart(spec, data)
         view = QChartView(chart, parent)
-        view.setRenderHint(QPainter.RenderHint.Antialiasing, True)
-        view.setRenderHint(QPainter.RenderHint.TextAntialiasing, True)
-        view.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform, True)
+        style_chart_view(view)
         view.setObjectName("PrismChartView")
         view.setMinimumSize(320, 240)
         return view
@@ -139,78 +121,58 @@ def _opt(spec: ChartSpec, key: str, default: Any) -> Any:
     return (spec.options or {}).get(key, default)
 
 
-def _theme_colors(spec: ChartSpec) -> list[QColor]:
-    name = str(_opt(spec, "color_theme", "teal")).lower()
-    return list(_THEMES.get(name, _THEMES["teal"]))
+def _theme_colors(spec: ChartSpec) -> list:
+    return series_colors(str(_opt(spec, "color_theme", "orange")))
 
 
 def _style_chart(chart: QChart, spec: ChartSpec) -> None:
-    chart.setTitle(spec.title or spec.chart_type)
-    title_font = QFont()
-    title_font.setPointSize(12)
-    title_font.setBold(True)
-    chart.setTitleFont(title_font)
-    chart.setAnimationOptions(QChart.AnimationOption.SeriesAnimations)
-    chart.setBackgroundRoundness(8)
-    # Leave room for vertical Y title + tick labels and angled X labels + X title.
+    style_chart(
+        chart,
+        title=spec.title or spec.chart_type,
+        show_legend=bool(_opt(spec, "show_legend", True)),
+    )
     left = 56 if str(_opt(spec, "y_axis_title", "") or "").strip() else 36
     bottom = 52 if str(_opt(spec, "x_axis_title", "") or "").strip() else 40
     chart.setMargins(QMargins(left, 20, 20, bottom))
-    chart.legend().setVisible(bool(_opt(spec, "show_legend", True)))
-    chart.legend().setAlignment(Qt.AlignmentFlag.AlignBottom)
 
 
-def _apply_axis_title(axis: QBarCategoryAxis | QValueAxis, title: str) -> None:
-    text = title.strip()
-    if not text:
-        axis.setTitleVisible(False)
-        return
-    axis.setTitleText(text)
-    axis.setTitleVisible(True)
-    title_font = QFont()
-    title_font.setPointSize(10)
-    title_font.setBold(True)
-    axis.setTitleFont(title_font)
-    axis.setTitleBrush(QBrush(QColor("#334155")))
+def _cat_axis(spec: ChartSpec) -> QBarCategoryAxis:
+    axis = QBarCategoryAxis()
+    style_category_axis(
+        axis,
+        show_labels=bool(_opt(spec, "show_labels", True)),
+        label_angle=int(_opt(spec, "label_angle", 45)),
+        title=str(_opt(spec, "x_axis_title", "") or ""),
+        show_grid=False,
+    )
+    return axis
 
 
-def _style_category_axis(axis: QBarCategoryAxis, spec: ChartSpec) -> None:
-    show = bool(_opt(spec, "show_labels", True))
-    axis.setLabelsVisible(show)
-    angle = int(_opt(spec, "label_angle", 45))
-    axis.setLabelsAngle(-abs(angle))
-    axis.setTruncateLabels(False)
-    _apply_axis_title(axis, str(_opt(spec, "x_axis_title", "") or ""))
-    font = QFont()
-    font.setPointSize(9)
-    axis.setLabelsFont(font)
-
-
-def _style_value_axis(axis: QValueAxis, spec: ChartSpec, *, role: str = "y") -> None:
-    show_grid = bool(_opt(spec, "show_grid", True))
-    axis.setGridLineVisible(show_grid)
-    axis.setMinorGridLineVisible(False)
-    axis.setLabelsVisible(True)
-    pen = QPen(QColor("#CBD5E1"))
-    pen.setWidthF(0.8)
-    axis.setGridLinePen(pen)
+def _val_axis(spec: ChartSpec, *, role: str = "y") -> QValueAxis:
+    axis = QValueAxis()
     title_key = "y_axis_title" if role == "y" else "x_axis_title"
-    _apply_axis_title(axis, str(_opt(spec, title_key, "") or ""))
-    font = QFont()
-    font.setPointSize(9)
-    axis.setLabelsFont(font)
-
-
-def _colorize_bar_set(bar_set: QBarSet, color: QColor) -> None:
-    bar_set.setColor(color)
-    bar_set.setBorderColor(color.darker(110))
+    style_value_axis(
+        axis,
+        title=str(_opt(spec, title_key, "") or ""),
+        show_grid=bool(_opt(spec, "show_grid", True)),
+    )
+    return axis
 
 
 def _build_table(spec: ChartSpec, data: ChartData, parent: Any) -> QWidget:
     host = QWidget(parent)
+    host.setObjectName("PrismChartTable")
+    host.setStyleSheet(
+        f"QWidget#PrismChartTable {{ background: {BG.name()}; }}"
+        f"QLabel {{ color: {TEXT.name()}; font-weight: 700; font-size: 14px; }}"
+        f"QTableWidget {{ background: {BG.name()}; color: {TEXT.name()}; "
+        f"gridline-color: {BORDER.name()}; border: 1px solid {BORDER.name()}; "
+        f"border-radius: 11px; }}"
+    )
     layout = QVBoxLayout(host)
     title = QLabel(spec.title or "Table")
     title.setObjectName("PageTitle")
+    title.setFont(ui_font(point_size=12, bold=True))
     layout.addWidget(title)
     table = QTableWidget(host)
     table.setObjectName("DataGrid")
@@ -224,7 +186,6 @@ def _build_table(spec: ChartSpec, data: ChartData, parent: Any) -> QWidget:
             value = batch.column(col)[row].as_py()
             table.setItem(row, col, QTableWidgetItem("" if value is None else str(value)))
     layout.addWidget(table)
-    host.setObjectName("PrismChartTable")
     return host
 
 
@@ -284,18 +245,17 @@ def _add_bar(chart: QChart, data: ChartData, spec: ChartSpec) -> None:
                 values.append(float(match.get("value") or 0) if match else 0.0)
             for value in values:
                 bar_set.append(value)
-            _colorize_bar_set(bar_set, colors[index % len(colors)])
+            style_bar_set(bar_set, colors[index % len(colors)])
         bar_series = QBarSeries()
+        style_bar_series(bar_series)
         for bar_set in series_map.values():
             bar_series.append(bar_set)
         chart.addSeries(bar_series)
-        axis_x = QBarCategoryAxis()
+        axis_x = _cat_axis(spec)
         axis_x.append(cat_order)
-        _style_category_axis(axis_x, spec)
         chart.addAxis(axis_x, Qt.AlignmentFlag.AlignBottom)
         bar_series.attachAxis(axis_x)
-        axis_y = QValueAxis()
-        _style_value_axis(axis_y, spec)
+        axis_y = _val_axis(spec)
         chart.addAxis(axis_y, Qt.AlignmentFlag.AlignLeft)
         bar_series.attachAxis(axis_y)
         _ensure_value_axis_range(axis_y)
@@ -306,17 +266,16 @@ def _add_bar(chart: QChart, data: ChartData, spec: ChartSpec) -> None:
     for row in rows:
         categories.append(str(row.get(data.category_column or "category", "")))
         bar_set.append(float(row.get("value") or 0))
-    _colorize_bar_set(bar_set, colors[0])
+    style_bar_set(bar_set, colors[0] if colors else ACCENT)
     bar_series = QBarSeries()
+    style_bar_series(bar_series)
     bar_series.append(bar_set)
     chart.addSeries(bar_series)
-    axis_x = QBarCategoryAxis()
+    axis_x = _cat_axis(spec)
     axis_x.append(categories)
-    _style_category_axis(axis_x, spec)
     chart.addAxis(axis_x, Qt.AlignmentFlag.AlignBottom)
     bar_series.attachAxis(axis_x)
-    axis_y = QValueAxis()
-    _style_value_axis(axis_y, spec)
+    axis_y = _val_axis(spec)
     chart.addAxis(axis_y, Qt.AlignmentFlag.AlignLeft)
     bar_series.attachAxis(axis_y)
     _ensure_value_axis_range(axis_y)
@@ -333,20 +292,17 @@ def _add_line(chart: QChart, data: ChartData, spec: ChartSpec) -> None:
     colors = _theme_colors(spec)
     series = QLineSeries()
     series.setName(data.value_columns[0] if data.value_columns else "value")
-    series.setColor(colors[0])
-    series.setPen(QPen(colors[0], 2.2))
+    style_line_series(series, colors[0] if colors else ACCENT)
     categories: list[str] = []
     for index, row in enumerate(rows):
         categories.append(str(row.get(data.category_column or "category", "")))
         series.append(float(index), float(row.get("value") or 0))
     chart.addSeries(series)
-    axis_x = QBarCategoryAxis()
+    axis_x = _cat_axis(spec)
     axis_x.append(categories)
-    _style_category_axis(axis_x, spec)
     chart.addAxis(axis_x, Qt.AlignmentFlag.AlignBottom)
     series.attachAxis(axis_x)
-    axis_y = QValueAxis()
-    _style_value_axis(axis_y, spec)
+    axis_y = _val_axis(spec)
     chart.addAxis(axis_y, Qt.AlignmentFlag.AlignLeft)
     series.attachAxis(axis_y)
 
@@ -363,47 +319,39 @@ def _add_area(chart: QChart, data: ChartData, spec: ChartSpec) -> None:
         lower.append(float(index), 0.0)
     area = QAreaSeries(upper, lower)
     area.setName(data.value_columns[0] if data.value_columns else "value")
-    area.setColor(colors[0])
-    area.setBorderColor(colors[0].darker(110))
-    brush = QBrush(colors[0])
-    brush.setStyle(Qt.BrushStyle.SolidPattern)
-    area.setBrush(brush)
+    style_area_series(area, colors[0] if colors else ACCENT)
     chart.addSeries(area)
-    axis_x = QBarCategoryAxis()
+    axis_x = _cat_axis(spec)
     axis_x.append(categories)
-    _style_category_axis(axis_x, spec)
     chart.addAxis(axis_x, Qt.AlignmentFlag.AlignBottom)
     area.attachAxis(axis_x)
-    axis_y = QValueAxis()
-    _style_value_axis(axis_y, spec)
+    axis_y = _val_axis(spec)
     chart.addAxis(axis_y, Qt.AlignmentFlag.AlignLeft)
     area.attachAxis(axis_y)
 
 
 def _add_pie(chart: QChart, data: ChartData, spec: ChartSpec) -> None:
     series = QPieSeries()
-    colors = _theme_colors(spec)
+    colors = _theme_colors(spec) or list(SERIES_COLORS)
     for index, row in enumerate(_rows(data)):
         label = str(row.get(data.category_column or "category", ""))
         slice_ = series.append(label, float(row.get("value") or 0))
-        slice_.setBrush(colors[index % len(colors)])
+        slice_.setBrush(QBrush(colors[index % len(colors)]))
+        slice_.setBorderColor(BG)
+        slice_.setLabelColor(TEXT_MUTED)
         slice_.setLabelVisible(bool(_opt(spec, "show_labels", True)))
     chart.addSeries(series)
 
 
 def _add_scatter(chart: QChart, data: ChartData, spec: ChartSpec) -> None:
     series = QScatterSeries()
-    colors = _theme_colors(spec)
     series.setName("points")
-    series.setMarkerSize(10.0)
-    series.setColor(colors[0])
+    style_scatter_series(series)
     for row in _rows(data):
         series.append(float(row.get("x") or 0), float(row.get("y") or 0))
     chart.addSeries(series)
-    axis_x = QValueAxis()
-    axis_y = QValueAxis()
-    _style_value_axis(axis_x, spec, role="x")
-    _style_value_axis(axis_y, spec, role="y")
+    axis_x = _val_axis(spec, role="x")
+    axis_y = _val_axis(spec, role="y")
     chart.addAxis(axis_x, Qt.AlignmentFlag.AlignBottom)
     chart.addAxis(axis_y, Qt.AlignmentFlag.AlignLeft)
     series.attachAxis(axis_x)

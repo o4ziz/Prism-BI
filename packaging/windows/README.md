@@ -7,7 +7,16 @@ This folder contains Windows packaging for the general-availability release.
 | Artifact | Description |
 |----------|-------------|
 | `dist/PrismBI/` | Portable folder produced by PyInstaller |
+| `dist/PrismBI-portable-1.0.0.zip` | Zip of that folder (share this, not just the `.exe`) |
 | `dist/PrismBI-Setup-1.0.0.exe` | Optional Inno Setup installer (if Inno is installed) |
+
+## Important — how to run / share
+
+Prism BI is an **onedir** portable app. `PrismBI.exe` must stay next to `_internal/`, `plugins/`, and `samples/`.
+
+- **Do run:** `dist\PrismBI\PrismBI.exe` (or unzip the portable zip and run `PrismBI.exe` inside the extracted folder)
+- **Do not** copy only `PrismBI.exe` to Desktop/Downloads — Windows will fail with errors like `Failed to load Python DLL …\_internal\python3xx.dll`
+- Share **`PrismBI-portable-1.0.0.zip`** (or the whole `PrismBI` folder), never a lone `.exe`
 
 ## Prerequisites
 

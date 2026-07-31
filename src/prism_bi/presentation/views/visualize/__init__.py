@@ -251,7 +251,7 @@ class VisualizeView(QWidget):
         self._label_angle.setValue(45)
         self._label_angle.setToolTip("Rotate X-axis labels (degrees)")
         self._color_theme = QComboBox()
-        self._color_theme.addItems(["Teal", "Ocean", "Sunset", "Mono"])
+        self._color_theme.addItems(["Orange", "Mono"])
         form_p.addRow(self._show_legend)
         form_p.addRow(self._show_grid)
         form_p.addRow(self._show_labels)
@@ -418,7 +418,9 @@ class VisualizeView(QWidget):
         self._show_grid.setChecked(bool(options.get("show_grid", True)))
         self._show_labels.setChecked(bool(options.get("show_labels", True)))
         self._label_angle.setValue(int(options.get("label_angle", 45)))
-        theme = str(options.get("color_theme", "teal")).title()
+        theme = str(options.get("color_theme", "orange")).title()
+        if theme in {"Teal", "Ocean", "Sunset"}:
+            theme = "Orange"
         idx = self._color_theme.findText(theme)
         if idx >= 0:
             self._color_theme.setCurrentIndex(idx)

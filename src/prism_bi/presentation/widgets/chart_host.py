@@ -5,8 +5,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from PySide6.QtCharts import QChartView
+from PySide6.QtGui import QBrush
 from PySide6.QtWidgets import QLabel, QSizePolicy, QVBoxLayout, QWidget
 
+from prism_bi.presentation.theme.prism_theme import BG, TEXT_MUTED, style_chart_view
 from prism_bi_sdk.dto.chart import ChartSpec
 
 if TYPE_CHECKING:
@@ -30,10 +32,15 @@ class ChartHostWidget(QWidget):
         self._view: QWidget | None = None
         self.setObjectName("ChartHostWidget")
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.setAutoFillBackground(True)
+        palette = self.palette()
+        palette.setColor(self.backgroundRole(), BG)
+        self.setPalette(palette)
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._placeholder = QLabel("No chart loaded")
         self._placeholder.setObjectName("EmptyStateLabel")
+        self._placeholder.setStyleSheet(f"color: {TEXT_MUTED.name()}; padding: 8px;")
         self._layout.addWidget(self._placeholder)
 
     @property
@@ -67,6 +74,8 @@ class ChartHostWidget(QWidget):
         self._spec = spec
         self._layout.addWidget(view, stretch=1)
         if isinstance(view, QChartView):
+            style_chart_view(view)
+            view.setBackgroundBrush(QBrush(BG))
             view.setRubberBand(QChartView.RubberBand.RectangleRubberBand)
         if data.truncated:
             tip = "Chart data was truncated to the configured point/category limit."
